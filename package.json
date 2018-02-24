@@ -1,0 +1,17 @@
+{
+  "name": "waveform",
+  "description": "Waveform visualization",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": {
+    "name": "Karri Väänänen",
+    "email": "knvaananen@gmail.com"
+  },
+  "devDependencies": {
+    "anypixel": "^1.0.2",
+    "three": "^0.90.0"
+  },
+  "scripts": {
+    "build": "browserify -d test/test.js > index.js"
+  }
+}
