@@ -13,5 +13,6 @@
   },
   "scripts": {
     "build": "browserify -d src/app.js > index.js"
-  }
+  },
+  "license": "MIT"
 }
