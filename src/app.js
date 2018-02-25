@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     camera.lookAt(new THREE.Vector3(0,0,0));
 
     var geometry = new THREE.BoxGeometry(1, 1, 1);
-    var material = new THREE.MeshPhongMaterial( { ambient: 0x000000, color: 0xFF0000, specular: 0xFFFFFF, shininess: 1 } );
+    var material = new THREE.MeshPhongMaterial( { color: 0xff0000, specular: 0xFFFFFF, shininess: 1 } );
     var cube = new THREE.Mesh( geometry, material );    
     scene.add( cube );
 
@@ -38,10 +38,22 @@ document.addEventListener('DOMContentLoaded', function() {
     guiCamera.position.set(0,0,500);
     guiCamera.up = new THREE.Vector3(0,1,0);
     guiCamera.lookAt(new THREE.Vector3(0,0,0));
-
-    // Setup microphone analyser
     var analyser=null, dataArray, bufferLength;
     var lineGeo, lineMat, line;
+
+    // Frequency visualization
+    var freqAnalyser, fregData, freqBufferLength;
+    var quads = [];
+    var quadGeo = new THREE.Geometry(); 
+    quadGeo.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
+    quadGeo.vertices.push(new THREE.Vector3(1.0, 0.0, 0.0));
+    quadGeo.vertices.push(new THREE.Vector3(1.0, 1.0, 0.0));
+    quadGeo.vertices.push(new THREE.Vector3(0.0, 1.0, 0.0)); 
+    quadGeo.faces.push(new THREE.Face3(0, 1, 2)); 
+    quadGeo.faces.push(new THREE.Face3(0, 2, 3));
+    quadGeo.computeFaceNormals();
+
+    // Setup microphone analyser
 	if (navigator.mediaDevices.getUserMedia)
 	{
 		navigator.mediaDevices.getUserMedia({audio:true}).then(
@@ -50,19 +62,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 let audioCtx = new(window.AudioContext || webkitAudioContext)();
                 console.log("sample rate: " + audioCtx.sampleRate);
                 var source = audioCtx.createMediaStreamSource(stream);
+
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 2048;
                 bufferLength = analyser.frequencyBinCount;
                 dataArray = new Uint8Array(bufferLength);
                 source.connect(analyser);
-
-                lineMat = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
+                lineMat = new THREE.LineBasicMaterial( { color: 0x00faf6 } );
                 lineGeo = new THREE.Geometry();
                 for (let i = 0; i < bufferLength; i++) {
                     lineGeo.vertices.push(new THREE.Vector3(0, 0, 0));
                 }
                 line = new THREE.Line( lineGeo, lineMat );
                 guiScene.add(line);
+
+                freqAnalyser = audioCtx.createAnalyser();
+                freqAnalyser.fftSize = 256;
+                freqBufferLength = freqAnalyser.frequencyBinCount;
+                fregData = new Uint8Array(freqBufferLength);
+                source.connect(freqAnalyser);
+                for (let i = 0; i < freqBufferLength; i++) {
+                    var mesh = new THREE.Mesh( quadGeo, new THREE.MeshBasicMaterial( { color: 0x0000ff } ));
+                    quads.push(mesh);
+                    guiScene.add(mesh)
+                }
 			},
 			function (err)
 			{
@@ -76,24 +99,43 @@ document.addEventListener('DOMContentLoaded', function() {
     var update = function () {
         var rms = 0;
         if (analyser) {
-            let WIDTH = anypixel.config.width;
-            let HEIGHT = anypixel.config.height;
             analyser.getByteTimeDomainData(dataArray);
-            var sliceWidth = WIDTH * 1.0 / bufferLength;
+            let width = anypixel.config.width;
+            let halfHeight = anypixel.config.height/2.0;
+            var sliceWidth = width * 1.0 / bufferLength;
             var x = 0;
             for (var i = 0; i < bufferLength; i++)
             {
                 var v = (dataArray[i] - 128.0)/128.0;
-                var y = (HEIGHT/2) + (HEIGHT/2) * v * window.appOptions.gain;
-                lineGeo.vertices[i].set(x,y,0);
+                var y = halfHeight + halfHeight * v * window.appOptions.gain; 
+                lineGeo.vertices[i].set(x,y,200);
                 x += sliceWidth;
                 rms += v*v;
             }
             lineGeo.verticesNeedUpdate = true;
             rms = Math.sqrt(rms / bufferLength);
+
+            analyser.getByteFrequencyData(fregData);
+            let height = anypixel.config.height;
+            sliceWidth = width * 1.0 / freqBufferLength;
+            x = 0;
+            for (let i = 0; i < freqBufferLength; i++) {
+                let v = fregData[i]/255.0;
+                quads[i].position.set(x, 0, 100);
+                quads[i].scale.set(sliceWidth,Math.max(0.01,height*v),1);
+                var hsl = quads[i].material.color.getHSL(); // { h: 0, s: 0, l: 0 }
+                quads[i].material.color.setHSL(
+                    Math.max(0, Math.min(1, 0.66 + v*0.3)), // from blue to red
+                    Math.max(0, Math.min(1, v*2.0)),
+                    Math.max(0, Math.min(0.5, v*2.0))
+                );
+                x += sliceWidth;
+            }
         }
 
         cube.scale.set(1.0+rms,1.0+rms,1.0+rms); // bounce based on rms
+        var hsl = cube.material.color.getHSL(); // spin color wheel based on rms
+        cube.material.color.setHSL(Math.min(1, rms), hsl.s, hsl.l);
 
         var newSpeed = 1.0+rms*10;
         if (newSpeed > speed) { // spin faster based on signal rms
