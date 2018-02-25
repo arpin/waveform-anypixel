@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Rotating cube
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(90, anypixel.config.width/anypixel.config.height, 0.1, 1000);
-    camera.position.set(0,0,2);
+    var camera = new THREE.PerspectiveCamera(70, anypixel.config.width/anypixel.config.height, 0.1, 1000);
+    camera.position.set(0,0,2.4);
     camera.up = new THREE.Vector3(0,1,0);
     camera.lookAt(new THREE.Vector3(0,0,0));
 
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         cube.rotation.x += Time.deltaTime*speed;
         cube.rotation.y += Time.deltaTime*speed;
-        cube.position.set(Math.sin(Time.time),0,Math.cos(Time.time)/2+0.5);
+        cube.position.set(Math.sin(Time.time)*1.1,0,Math.cos(Time.time)/2+0.5);
         //console.log(rms, speed);
     };
 
