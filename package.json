@@ -12,6 +12,6 @@
     "three": "^0.90.0"
   },
   "scripts": {
-    "build": "browserify -d test/test.js > index.js"
+    "build": "browserify -d src/app.js > index.js"
   }
 }
