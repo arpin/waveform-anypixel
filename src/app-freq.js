@@ -7,26 +7,28 @@ window.appOptions = {
     gain: 1.0,
     mode: 0,
     freqColor: 0.34,
+    autoRotateColor: true,
+    rotateColorThisFrame: 0,
 };
 
 document.addEventListener('onButtonDown', function(event) {
     let corner = (event.detail.x == 0 || event.detail.x == anypixel.config.width - 1) &&
                 (event.detail.y == 0 || event.detail.y == anypixel.config.height - 1);
+    let edge = event.detail.x == 0 || event.detail.x == anypixel.config.width - 1 ||
+                event.detail.y == 0 || event.detail.y == anypixel.config.height - 1;
     let leftside = (event.detail.x < anypixel.config.width / 2.0);
     if (corner) {
         window.appOptions.mode = (window.appOptions.mode+1) % 4;
         console.log("Selected mode: ", window.appOptions.mode);
     }
-    //else if (leftside) {
-    //    window.appOptions.freqColor = (window.appOptions.freqColor - 0.05) % 1;
-    //    if (window.appOptions.freqColor < 0) {
-    //        window.appOptions.freqColor += 1; 
-    //    }
-    //    console.log("Color: ", window.appOptions.freqColor);
-    //}
+    else if (edge) {
+        window.appOptions.autoRotateColor = true;
+        console.log("Auto rotating color enabled");
+    }
     else {
-        window.appOptions.freqColor = (window.appOptions.freqColor + 0.05) % 1;
-        console.log("Color: ", window.appOptions.freqColor);
+        window.appOptions.autoRotateColor = false;
+        window.appOptions.rotateColorThisFrame += 1;
+        console.log("Rotate color:", window.appOptions.rotateColorThisFrame);
     }
 });
 
@@ -153,6 +155,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
                 x += sliceWidth;
             }
+        }
+
+        if (window.appOptions.autoRotateColor) {
+            window.appOptions.freqColor = (window.appOptions.freqColor + 0.05*Time.deltaTime) % 1;
+        }
+        if (window.appOptions.rotateColorThisFrame > 0) {
+            window.appOptions.freqColor = (window.appOptions.freqColor + Time.deltaTime) % 1;
+            window.appOptions.rotateColorThisFrame = 0;
         }
     };
 
