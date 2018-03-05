@@ -14,7 +14,7 @@ document.addEventListener('onButtonDown', function(event) {
                 (event.detail.y == 0 || event.detail.y == anypixel.config.height - 1);
     let leftside = (event.detail.x < anypixel.config.width / 2.0);
     if (corner) {
-        window.appOptions.mode = (window.appOptions.mode+1) % 3;
+        window.appOptions.mode = (window.appOptions.mode+1) % 4;
         console.log("Selected mode: ", window.appOptions.mode);
     }
     //else if (leftside) {
@@ -131,9 +131,15 @@ document.addEventListener('DOMContentLoaded', function() {
             x = 0;
             for (let i = 0; i < freqBufferLength; i++) {
                 let v = fregData[i]/255.0;
-                quads[i].position.set(x, 0, 100);
-                quads[i].scale.set(sliceWidth,Math.max(0.01,height*v),1);
-                hsl = quads[i].material.color.getHSL(); // { h: 0, s: 0, l: 0 }
+                if (window.appOptions.mode == 3) {
+                    quads[i].position.set(x, 0.5*(anypixel.config.height - height*v), 100);
+                    quads[i].scale.set(sliceWidth,Math.max(0.01,height*v),1);
+                }
+                else {
+                    quads[i].position.set(x, 0, 100);
+                    quads[i].scale.set(sliceWidth,Math.max(0.01,height*v),1);
+                }
+                var hsl = quads[i].material.color.getHSL(); // { h: 0, s: 0, l: 0 }
 
                 let color = window.appOptions.freqColor - v*0.333; // default 0.33 ==> 0 means green ==> red
                 color = color % 1;
@@ -164,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 2:
                 renderer.render(waveScene, guiCamera);
                 break;
+            case 3:
             default:
             case 0:
                 renderer.render(freqScene, guiCamera);
