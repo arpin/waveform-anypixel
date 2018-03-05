@@ -1,6 +1,8 @@
 
 ![Screenshot](screenshot.png)
 
+![Screenshot](screenshot_alternate.png)
+
 ## Getting Started
 
 1. Install the [previewer](https://github.com/googlecreativelab/anypixel/blob/master/frontend/previewer/README.md)
