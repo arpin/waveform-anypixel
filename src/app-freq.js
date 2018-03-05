@@ -19,16 +19,16 @@ document.addEventListener('onButtonDown', function(event) {
     let leftside = (event.detail.x < anypixel.config.width / 2.0);
     if (corner) {
         window.appOptions.mode = (window.appOptions.mode+1) % 4;
-        console.log("Selected mode: ", window.appOptions.mode);
+        //console.log("Selected mode: ", window.appOptions.mode);
     }
     else if (edge) {
         window.appOptions.autoRotateColor = true;
-        console.log("Auto rotating color enabled");
+        //console.log("Auto rotating color enabled");
     }
     else {
         window.appOptions.autoRotateColor = false;
         window.appOptions.rotateColorThisFrame += 1;
-        console.log("Rotate color:", window.appOptions.rotateColorThisFrame);
+        //console.log("Rotate color:", window.appOptions.rotateColorThisFrame);
     }
 });
 
@@ -106,8 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		);
 	}
 
-
-    var speed = 1.0;
     var update = function () {
         var rms = 0;
         if (analyser) {
