@@ -7,7 +7,7 @@ window.appOptions = {
     gain: 1.0,
     mode: 0,
     freqColor: 0.34,
-    autoRotateColor: true,
+    autoRotateColor: false,
     rotateColorThisFrame: 0,
 };
 

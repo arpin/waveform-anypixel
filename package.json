@@ -1,5 +1,6 @@
 {
   "name": "waveform",
+  "display_name": "waveform",
   "description": "Waveform visualization",
   "version": "1.0.0",
   "main": "index.js",
