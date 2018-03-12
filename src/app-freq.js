@@ -7,6 +7,11 @@ window.appOptions = {
     gain: 1.0,
     mode: 0,
     freqColor: 0.34,
+    freqHi: {
+        enabled: true,
+        color: 0xdddddd,
+        cooldown: 1.0,
+    },
     autoRotateColor: false,
     rotateColorThisFrame: 0,
 };
@@ -61,6 +66,10 @@ document.addEventListener('DOMContentLoaded', function() {
     quadGeo.faces.push(new THREE.Face3(0, 2, 3));
     quadGeo.computeFaceNormals();
 
+    var freqSceneHi = new THREE.Scene();
+    var quadsHi = [];
+    var maxHi = [];
+
     // Setup microphone analyser
 	if (navigator.mediaDevices.getUserMedia)
 	{
@@ -97,6 +106,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     var mesh = new THREE.Mesh( quadGeo, new THREE.MeshBasicMaterial( { color: 0x0000ff } ));
                     quads.push(mesh);
                     freqScene.add(mesh)
+
+                    mesh = new THREE.Mesh( quadGeo, new THREE.MeshBasicMaterial( { color: window.appOptions.freqHi.color } ));
+                    quadsHi.push(mesh);
+                    freqSceneHi.add(mesh)
+                    maxHi.push({
+                        time: 0,
+                        value: 0.0
+                    });
                 }
 			},
 			function (err)
@@ -107,6 +124,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
     var update = function () {
+        for (let i = 0; i < freqBufferLength; i++) {
+            if (Time.time > maxHi[i].time) {
+                maxHi[i].value = Math.max(0, maxHi[i].value-Time.deltaTime);
+            }
+        }
+
         var rms = 0;
         if (analyser) {
             analyser.getByteTimeDomainData(dataArray);
@@ -131,13 +154,23 @@ document.addEventListener('DOMContentLoaded', function() {
             x = 0;
             for (let i = 0; i < freqBufferLength; i++) {
                 let v = fregData[i]/255.0;
+                if (v > maxHi[i].value) {
+                    maxHi[i] = {
+                        time: Time.time+window.appOptions.freqHi.cooldown,
+                        value: v
+                    };
+                }
                 if (window.appOptions.mode == 3) {
                     quads[i].position.set(x, 0.5*(anypixel.config.height - height*v), 100);
                     quads[i].scale.set(sliceWidth,Math.max(0.01,height*v),1);
+                    quadsHi[i].position.set(x, 0.5*(anypixel.config.height - height*maxHi[i].value), 99);
+                    quadsHi[i].scale.set(sliceWidth,Math.max(0.01,height*maxHi[i].value),1);
                 }
                 else {
                     quads[i].position.set(x, 0, 100);
                     quads[i].scale.set(sliceWidth,Math.max(0.01,height*v),1);
+                    quadsHi[i].position.set(x, 0, 99);
+                    quadsHi[i].scale.set(sliceWidth,Math.max(0.01,height*maxHi[i].value),1);
                 }
                 var hsl = quads[i].material.color.getHSL(); // { h: 0, s: 0, l: 0 }
 
@@ -172,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         switch (window.appOptions.mode) {
             case 1:
+                if (window.appOptions.freqHi.enabled) renderer.render(freqSceneHi, guiCamera);
                 renderer.render(freqScene, guiCamera);
                 renderer.render(waveScene, guiCamera);
                 break;
@@ -181,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 3:
             default:
             case 0:
+                if (window.appOptions.freqHi.enabled) renderer.render(freqSceneHi, guiCamera);
                 renderer.render(freqScene, guiCamera);
                 break;
         }
