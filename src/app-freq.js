@@ -9,8 +9,8 @@ window.appOptions = {
     freqColor: 0.34,
     freqHi: {
         enabled: true,
-        color: 0xdddddd,
-        cooldown: 1.0,
+        color: 0x444444,
+        cooldown: 1.5,
     },
     autoRotateColor: false,
     rotateColorThisFrame: 0,
