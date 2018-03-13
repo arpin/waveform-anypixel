@@ -9,7 +9,7 @@ window.appOptions = {
     freqColor: 0.34,
     freqHi: {
         enabled: true,
-        color: 0x444444,
+        color: 0x777777,
         cooldown: 1.5,
     },
     autoRotateColor: false,
@@ -184,6 +184,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     Math.max(0.4, Math.min(1, v*2.0)),
                     Math.max(0.2, Math.min(0.5, v*2.0))
                 );
+
+                hsl = quadsHi[i].material.color.getHSL();
+                quadsHi[i].material.color.setHSL(
+                    hsl.h,
+                    hsl.s,
+                    Math.max(0.1, Math.min(0.5, maxHi[i].value*0.7)) // Dim short peaks
+                );
+
                 x += sliceWidth;
             }
         }
