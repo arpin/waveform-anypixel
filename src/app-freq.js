@@ -5,14 +5,14 @@ var Time = require('./Time.js');
 
 window.appOptions = {
     gain: 1.0,
-    mode: 0,
+    mode: 3,
     freqColor: 0.34,
     freqHi: {
         enabled: true,
         color: 0x777777,
         cooldown: 1.5,
     },
-    autoRotateColor: false,
+    autoRotateColor: true,
     rotateColorThisFrame: 0,
 };
 
